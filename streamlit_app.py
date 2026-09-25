@@ -13,7 +13,7 @@ import streamlit as st
 # CONFIGURATION
 # ============================================================
 
-API_URL = "http://localhost:8000"
+API_URL = "https://unpenurious-nonintrovertedly-ai.ngrok-free.dev"
 BASE_DIR = Path(__file__).resolve().parent
 IMAGE_DIR = BASE_DIR / "images"
 
