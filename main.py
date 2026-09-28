@@ -72,7 +72,7 @@ def validate_selection(exam: str, schema: str):
     if schema_variant not in EXAMS[exam_key]["schemas"]:
         raise HTTPException(
             status_code=400,
-            detail="Invalid schema. Use SCHEMA_A or SCHEMA_B."
+            detail="Invalid schema. Use SCHEMA_A, SCHEMA_B or SCHEMA_C."
         )
 
     return exam_key, schema_variant, EXAMS[exam_key]["schemas"][schema_variant]

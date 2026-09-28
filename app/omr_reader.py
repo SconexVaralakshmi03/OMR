@@ -53,14 +53,15 @@ def select_jee_main_schema():
     print("\nSelect JEE Main OMR schema:")
     print("A. Existing JEE Main format")
     print("B. New JEE Main format")
+    print("C. JEE Main format with numerical grids")
 
     while True:
-        variant = input("\nEnter schema (A/B): ").strip().upper()
+        variant = input("\nEnter schema (A/B/C): ").strip().upper()
 
         if variant in JEE_MAIN_SCHEMAS:
             return variant
 
-        print("Invalid choice. Enter A or B.")
+        print("Invalid choice. Enter A, B or C.")
 
 
 # ============================================================
@@ -74,14 +75,15 @@ def select_neet_schema():
     print("\nSelect NEET OMR schema:")
     print("A. Existing NEET format")
     print("B. New NEET format")
+    print("C. NEET format with 50-row blocks (Q1-Q200)")
 
     while True:
-        variant = input("\nEnter schema (A/B): ").strip().upper()
+        variant = input("\nEnter schema (A/B/C): ").strip().upper()
 
         if variant in NEET_SCHEMAS:
             return variant
 
-        print("Invalid choice. Enter A or B.")
+        print("Invalid choice. Enter A, B or C.")
 
 
 
@@ -266,6 +268,10 @@ def read_roll_number(image, roll_schema):
 # ============================================================
 
 def process_jee_main(image, schema):
+    # Schema C uses a different mixed MCQ/numerical layout.
+    if "numeric_questions" in schema:
+        return process_jee_main_schema_c(image, schema)
+
     debug = image.copy()
     result = {}
 
@@ -325,6 +331,144 @@ def process_jee_main(image, schema):
                     (255, 0, 0),
                     2
                 )
+
+    return result, debug, roll_number
+
+
+
+# ============================================================
+# JEE MAIN SCHEMA C - NUMERICAL RESPONSE GRID
+# ============================================================
+
+def read_schema_c_numeric_question(
+    image,
+    x_positions,
+    y_positions,
+):
+    """
+    Schema C numerical grid.
+
+    Each of the 7 physical columns can contain one of:
+      '-'  (minus)
+      '.'  (decimal point)
+      0-9  (digit)
+
+    Blank columns are ignored when the extracted answer string is
+    assembled. A high threshold is used because the last response
+    row is close to the magenta separator line in this template.
+    """
+    numeric_options = ["-", "."] + list("0123456789")
+    selected = []
+
+    for x in x_positions:
+        scores = [
+            bubble_black_ratio(
+                image,
+                x,
+                y,
+                radius=5
+            )
+            for y in y_positions
+        ]
+
+        marked = [
+            i
+            for i, score in enumerate(scores)
+            if score >= 0.65
+        ]
+
+        if len(marked) > 1:
+            selected.append("INVALID")
+        elif len(marked) == 1:
+            selected.append(numeric_options[marked[0]])
+        else:
+            selected.append("")
+
+    if all(value == "" for value in selected):
+        return None, selected
+
+    if "INVALID" in selected:
+        return "INVALID", selected
+
+    # Preserve the physical left-to-right order while removing
+    # unused blank columns.
+    return "".join(
+        value
+        for value in selected
+        if value != ""
+    ), selected
+
+
+def process_jee_main_schema_c(image, schema):
+    debug = image.copy()
+    result = {}
+
+    # Roll number
+    roll_number, roll_debug = read_roll_number(
+        image,
+        schema["roll_number"]
+    )
+
+    # Part I/II/III MCQ questions: Q1-20, Q31-50, Q61-80.
+    for subject_name, subject in schema["subjects"].items():
+
+        start_question = subject["start_question"]
+
+        for row, y in enumerate(subject["y_positions"]):
+
+            question_number = start_question + row
+
+            answer, scores = read_choice_question(
+                image,
+                subject["x_positions"],
+                y,
+                schema["options"]
+            )
+
+            result[str(question_number)] = answer
+
+            if answer in schema["options"]:
+                index = schema["options"].index(answer)
+
+                cv2.circle(
+                    debug,
+                    (
+                        subject["x_positions"][index],
+                        y
+                    ),
+                    10,
+                    (255, 0, 0),
+                    2
+                )
+
+    # Numerical questions: Q21-30, Q51-60, Q81-90.
+    for numeric in schema["numeric_questions"]:
+
+        answer, selected = read_schema_c_numeric_question(
+            image,
+            numeric["x_positions"],
+            numeric["y_positions"]
+        )
+
+        question_number = numeric["start_question"]
+
+        result[str(question_number)] = answer
+
+    expected_questions = set(
+        str(i)
+        for i in range(1, 91)
+    )
+
+    if set(result.keys()) != expected_questions:
+        missing = sorted(
+            expected_questions - set(result.keys()),
+            key=int
+        )
+
+        raise ValueError(
+            "JEE Main Schema C extraction did not produce "
+            f"all 90 questions. Missing: {missing}"
+        )
 
     return result, debug, roll_number
 

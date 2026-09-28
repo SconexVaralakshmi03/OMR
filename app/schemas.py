@@ -319,16 +319,328 @@ NEET_SCHEMA_B = {
 
 
 
+
+
+# ============================================================
+# JEE MAIN - SCHEMA C
+# ============================================================
+# Third JEE Main template supplied by the user.
+#
+# Layout:
+#   Part I   : Q1-Q20   -> 4-option MCQ
+#   Part I   : Q21-Q30  -> 7-column numeric grid
+#   Part II  : Q31-Q50  -> 4-option MCQ
+#   Part II  : Q51-Q60  -> 7-column numeric grid
+#   Part III : Q61-Q80  -> 4-option MCQ
+#   Part III : Q81-Q90  -> 7-column numeric grid
+#
+# Numeric grids have 12 response rows:
+#   '-' , '.' followed by digits 0-9.
+#
+# The blank position(s) in a numeric grid are preserved when
+# constructing the extracted answer so that the answer-key and
+# student OMR use exactly the same physical representation.
+# ============================================================
+
+JEE_MAIN_SCHEMA_C = {
+    "name": "JEE Main",
+    "template_width": 1448,
+    "template_height": 2048,
+    "options": ["A", "B", "C", "D"],
+
+    "roll_number": {
+        "length": 7,
+        "x_positions": [890, 915, 939, 963, 987, 1013, 1037],
+        "digit_y_positions": [
+            61, 83, 105, 126, 148,
+            169, 191, 213, 234, 256
+        ],
+    },
+
+    "subjects": {
+        "Physics": {
+            "start_question": 1,
+            "x_positions": [165, 203, 242, 280],
+            "y_positions": [
+                364, 386, 408, 430, 451,
+                495, 516, 538, 559, 581,
+                624, 646, 667, 689, 711,
+                755, 777, 798, 820, 841
+            ],
+        },
+        "Chemistry": {
+            "start_question": 31,
+            "x_positions": [165, 203, 242, 280],
+            "y_positions": [
+                950, 972, 993, 1015, 1036,
+                1081, 1102, 1124, 1145, 1167,
+                1210, 1232, 1253, 1275, 1297,
+                1340, 1361, 1383, 1405, 1427
+            ],
+        },
+        "Mathematics": {
+            "start_question": 61,
+            "x_positions": [165, 203, 242, 280],
+            "y_positions": [
+                1535, 1556, 1578, 1599, 1621,
+                1664, 1686, 1708, 1730, 1752,
+                1795, 1817, 1838, 1860, 1881,
+                1925, 1946, 1968, 1989, 2010
+            ],
+        },
+    },
+
+    "numeric_questions": [
+        {
+            "start_question": 21,
+            "x_positions": [344, 372, 398, 426, 452, 480, 506],
+            "y_positions": [321, 343, 365, 386, 408, 429, 451, 473, 495, 516, 538, 560],
+        },
+        {
+            "start_question": 22,
+            "x_positions": [553, 580, 607, 634, 661, 688, 715],
+            "y_positions": [320, 342, 364, 386, 408, 430, 451, 473, 494, 516, 538, 560],
+        },
+        {
+            "start_question": 23,
+            "x_positions": [762, 788, 816, 843, 869, 897, 924],
+            "y_positions": [321, 343, 364, 386, 408, 429, 452, 472, 494, 516, 538, 560],
+        },
+        {
+            "start_question": 24,
+            "x_positions": [970, 997, 1025, 1051, 1078, 1106, 1132],
+            "y_positions": [320, 342, 364, 386, 408, 429, 451, 473, 495, 516, 538, 560],
+        },
+        {
+            "start_question": 25,
+            "x_positions": [1179, 1206, 1233, 1260, 1287, 1314, 1342],
+            "y_positions": [321, 342, 364, 387, 408, 429, 451, 473, 495, 516, 538, 559],
+        },
+        {
+            "start_question": 26,
+            "x_positions": [344, 371, 398, 425, 452, 479, 507],
+            "y_positions": [603, 625, 646, 668, 690, 711, 734, 755, 776, 798, 820, 842],
+        },
+        {
+            "start_question": 27,
+            "x_positions": [553, 580, 607, 634, 661, 688, 715],
+            "y_positions": [603, 625, 646, 668, 690, 712, 734, 755, 777, 798, 820, 841],
+        },
+        {
+            "start_question": 28,
+            "x_positions": [762, 788, 816, 842, 870, 897, 924],
+            "y_positions": [603, 625, 646, 668, 690, 711, 734, 755, 777, 798, 820, 842],
+        },
+        {
+            "start_question": 29,
+            "x_positions": [970, 997, 1025, 1051, 1079, 1106, 1132],
+            "y_positions": [603, 625, 646, 668, 690, 711, 733, 754, 777, 798, 820, 842],
+        },
+        {
+            "start_question": 30,
+            "x_positions": [1179, 1206, 1233, 1260, 1287, 1314, 1341],
+            "y_positions": [602, 625, 646, 668, 690, 711, 734, 755, 776, 798, 820, 842],
+        },
+        {
+            "start_question": 51,
+            "x_positions": [344, 371, 398, 426, 452, 480, 507],
+            "y_positions": [906, 929, 950, 972, 993, 1015, 1037, 1058, 1080, 1102, 1124, 1145],
+        },
+        {
+            "start_question": 52,
+            "x_positions": [553, 580, 607, 634, 661, 688, 715],
+            "y_positions": [906, 928, 950, 972, 994, 1016, 1037, 1058, 1080, 1102, 1124, 1146],
+        },
+        {
+            "start_question": 53,
+            "x_positions": [761, 789, 816, 842, 870, 897, 924],
+            "y_positions": [906, 929, 950, 972, 994, 1015, 1037, 1058, 1080, 1102, 1124, 1145],
+        },
+        {
+            "start_question": 54,
+            "x_positions": [970, 997, 1024, 1052, 1078, 1106, 1132],
+            "y_positions": [907, 928, 950, 972, 994, 1015, 1036, 1058, 1080, 1102, 1124, 1145],
+        },
+        {
+            "start_question": 55,
+            "x_positions": [1179, 1206, 1233, 1260, 1287, 1314, 1341],
+            "y_positions": [906, 929, 950, 972, 994, 1016, 1037, 1058, 1080, 1102, 1124, 1146],
+        },
+        {
+            "start_question": 56,
+            "x_positions": [344, 371, 398, 426, 453, 480, 506],
+            "y_positions": [1188, 1211, 1232, 1254, 1275, 1297, 1319, 1341, 1363, 1384, 1406, 1428],
+        },
+        {
+            "start_question": 57,
+            "x_positions": [553, 580, 607, 634, 661, 688, 715],
+            "y_positions": [1188, 1210, 1232, 1253, 1276, 1297, 1319, 1340, 1362, 1384, 1406, 1427],
+        },
+        {
+            "start_question": 58,
+            "x_positions": [761, 789, 815, 842, 870, 897, 924],
+            "y_positions": [1188, 1210, 1232, 1254, 1276, 1297, 1318, 1340, 1362, 1384, 1406, 1428],
+        },
+        {
+            "start_question": 59,
+            "x_positions": [970, 998, 1025, 1052, 1078, 1105, 1132],
+            "y_positions": [1188, 1211, 1232, 1254, 1275, 1297, 1319, 1340, 1362, 1384, 1406, 1427],
+        },
+        {
+            "start_question": 60,
+            "x_positions": [1179, 1206, 1233, 1260, 1287, 1314, 1341],
+            "y_positions": [1188, 1210, 1232, 1254, 1275, 1298, 1319, 1340, 1362, 1384, 1406, 1428],
+        },
+        {
+            "start_question": 81,
+            "x_positions": [344, 372, 398, 425, 452, 479, 507],
+            "y_positions": [1491, 1513, 1535, 1556, 1578, 1600, 1622, 1643, 1664, 1686, 1708, 1730],
+        },
+        {
+            "start_question": 82,
+            "x_positions": [553, 580, 607, 634, 661, 688, 715],
+            "y_positions": [1491, 1513, 1534, 1556, 1578, 1600, 1622, 1643, 1665, 1687, 1708, 1730],
+        },
+        {
+            "start_question": 83,
+            "x_positions": [762, 789, 816, 843, 870, 897, 924],
+            "y_positions": [1491, 1513, 1534, 1556, 1578, 1600, 1622, 1643, 1664, 1686, 1708, 1730],
+        },
+        {
+            "start_question": 84,
+            "x_positions": [970, 998, 1024, 1052, 1078, 1106, 1132],
+            "y_positions": [1491, 1512, 1535, 1556, 1578, 1600, 1622, 1643, 1664, 1686, 1708, 1730],
+        },
+        {
+            "start_question": 85,
+            "x_positions": [1179, 1206, 1233, 1260, 1287, 1314, 1342],
+            "y_positions": [1491, 1513, 1534, 1556, 1578, 1600, 1622, 1643, 1665, 1686, 1708, 1730],
+        },
+        {
+            "start_question": 86,
+            "x_positions": [344, 371, 398, 426, 453, 479, 507],
+            "y_positions": [1773, 1795, 1817, 1838, 1860, 1882, 1904, 1925, 1947, 1968, 1990, 2012],
+        },
+        {
+            "start_question": 87,
+            "x_positions": [553, 580, 607, 634, 661, 688, 715],
+            "y_positions": [1773, 1795, 1817, 1838, 1860, 1882, 1903, 1926, 1946, 1969, 1990, 2012],
+        },
+        {
+            "start_question": 88,
+            "x_positions": [761, 789, 816, 843, 870, 897, 924],
+            "y_positions": [1773, 1795, 1816, 1838, 1860, 1882, 1903, 1926, 1947, 1968, 1990, 2012],
+        },
+        {
+            "start_question": 89,
+            "x_positions": [970, 998, 1024, 1051, 1079, 1106, 1132],
+            "y_positions": [1773, 1794, 1816, 1838, 1860, 1882, 1903, 1925, 1946, 1968, 1990, 2012],
+        },
+        {
+            "start_question": 90,
+            "x_positions": [1179, 1206, 1233, 1260, 1287, 1314, 1342],
+            "y_positions": [1773, 1795, 1817, 1838, 1860, 1882, 1904, 1925, 1946, 1969, 1990, 2012],
+        },
+    ],
+}
+
+
+# ============================================================
+# NEET - SCHEMA C
+# ============================================================
+# Third NEET template (1241 x 1754, letters A-D).
+#
+# Layout (4 response blocks, 50 rows each, one continuous grid):
+#   Block 1 -> Q1-Q50     (Physics)
+#   Block 2 -> Q51-Q100   (Chemistry)
+#   Block 3 -> Q101-Q150  (Botany)
+#   Block 4 -> Q151-Q200  (Zoology)
+# Roll Number: 7 columns, each with digits 0-9 (top to bottom).
+#
+# Each block lists its own x_positions and y_positions
+# (the y values happen to be identical for all four blocks).
+# The bubble centres were measured directly from the template
+# image, so the width/height below must not be changed.
+# ============================================================
+
+NEET_SCHEMA_C = {
+    "name": "NEET",
+    "template_width": 1241,
+    "template_height": 1754,
+    "options": ["A", "B", "C", "D"],
+    "total_questions": 200,
+
+    "roll_number": {
+        "length": 7,
+        "x_positions": [111, 136, 160, 185, 209, 234, 258],
+        "digit_y_positions": [425, 449, 472, 496, 520, 543, 567, 590, 614, 638],
+    },
+
+    "columns": [
+        {
+            "start_question": 1,
+            "x_positions": [422, 456, 490, 524],
+            "question_numbers": list(range(1, 51)),
+            "y_positions": [
+                402, 426, 450, 473, 497, 521, 544, 568, 592, 615,
+                638, 662, 686, 709, 733, 757, 780, 804, 828, 851,
+                875, 899, 922, 946, 969, 993, 1016, 1040, 1064, 1088,
+                1111, 1134, 1158, 1182, 1206, 1229, 1253, 1276, 1300, 1324,
+                1348, 1371, 1394, 1418, 1442, 1466, 1489, 1513, 1536, 1560,
+            ],
+        },
+        {
+            "start_question": 51,
+            "x_positions": [625, 659, 693, 726],
+            "question_numbers": list(range(51, 101)),
+            "y_positions": [
+                402, 426, 450, 473, 497, 521, 544, 568, 592, 615,
+                638, 662, 686, 709, 733, 757, 780, 804, 828, 851,
+                875, 899, 922, 946, 969, 993, 1016, 1040, 1064, 1088,
+                1111, 1134, 1158, 1182, 1206, 1229, 1253, 1276, 1300, 1324,
+                1348, 1371, 1394, 1418, 1442, 1466, 1489, 1513, 1536, 1560,
+            ],
+        },
+        {
+            "start_question": 101,
+            "x_positions": [828, 862, 895, 930],
+            "question_numbers": list(range(101, 151)),
+            "y_positions": [
+                402, 426, 450, 473, 497, 521, 544, 568, 592, 615,
+                638, 662, 686, 709, 733, 757, 780, 804, 828, 851,
+                875, 899, 922, 946, 969, 993, 1016, 1040, 1064, 1088,
+                1111, 1134, 1158, 1182, 1206, 1229, 1253, 1276, 1300, 1324,
+                1348, 1371, 1394, 1418, 1442, 1466, 1489, 1513, 1536, 1560,
+            ],
+        },
+        {
+            "start_question": 151,
+            "x_positions": [1031, 1065, 1098, 1132],
+            "question_numbers": list(range(151, 201)),
+            "y_positions": [
+                402, 426, 450, 473, 497, 521, 544, 568, 592, 615,
+                638, 662, 686, 709, 733, 757, 780, 804, 828, 851,
+                875, 899, 922, 946, 969, 993, 1016, 1040, 1064, 1088,
+                1111, 1134, 1158, 1182, 1206, 1229, 1253, 1276, 1300, 1324,
+                1348, 1371, 1394, 1418, 1442, 1466, 1489, 1513, 1536, 1560,
+            ],
+        },
+    ],
+}
+
+
 # JEE Main variants. The user selects JEE Main first, then A or B.
 JEE_MAIN_SCHEMAS = {
     "A": JEE_MAIN_SCHEMA_A,
     "B": JEE_MAIN_SCHEMA_B,
+    "C": JEE_MAIN_SCHEMA_C,
 }
 
-# NEET variants. The user selects NEET first, then A or B.
+# NEET variants. The user selects NEET first, then A, B or C.
 NEET_SCHEMAS = {
     "A": NEET_SCHEMA_A,
     "B": NEET_SCHEMA_B,
+    "C": NEET_SCHEMA_C,
 }
 
 # Exam selection:

@@ -13,7 +13,7 @@ import streamlit as st
 # CONFIGURATION
 # ============================================================
 
-API_URL = "https://unpenurious-nonintrovertedly-ai.ngrok-free.dev"
+API_URL = "http://localhost:8000"  # Change this to your FastAPI backend URL if needed
 BASE_DIR = Path(__file__).resolve().parent
 IMAGE_DIR = BASE_DIR / "images"
 
@@ -243,8 +243,10 @@ def get_preview_path():
     Supported names:
       images/jee_schema_a.png
       images/jee_schema_b.png
+      images/jee_schema_c.png
       images/neet_schema_a.png
       images/neet_schema_b.png
+      images/neet_schema_c.png
 
     Also tries common JPG/JPEG/WebP variants.
     """
@@ -254,11 +256,11 @@ def get_preview_path():
         else "neet"
     )
 
-    schema = (
-        "schema_a"
-        if st.session_state.schema == "SCHEMA_A"
-        else "schema_b"
-    )
+    schema = {
+        "SCHEMA_A": "schema_a",
+        "SCHEMA_B": "schema_b",
+        "SCHEMA_C": "schema_c",
+    }.get(st.session_state.schema, "schema_a")
 
     candidates = [
         f"{prefix}_{schema}.png",
@@ -533,7 +535,7 @@ if st.session_state.course:
         unsafe_allow_html=True,
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         if st.button(
@@ -553,6 +555,18 @@ if st.session_state.course:
             use_container_width=True,
         ):
             st.session_state.schema = "SCHEMA_B"
+            st.session_state.answer_key_result = None
+            st.session_state.answer_key_name = None
+            st.session_state.student_result = None
+            st.session_state.evaluation = None
+            st.rerun()
+
+    with col3:
+        if st.button(
+            "📄 SCHEMA C",
+            use_container_width=True,
+        ):
+            st.session_state.schema = "SCHEMA_C"
             st.session_state.answer_key_result = None
             st.session_state.answer_key_name = None
             st.session_state.student_result = None
