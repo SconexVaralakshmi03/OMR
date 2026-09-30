@@ -7,13 +7,18 @@ import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.omr_reader import process_jee_main, process_neet, resize_to_template
-from app.schemas import JEE_MAIN_SCHEMAS, NEET_SCHEMAS
+from app.omr_reader import (
+    process_jee_main,
+    process_jee_advanced,
+    process_neet,
+    resize_to_template,
+)
+from app.schemas import JEE_MAIN_SCHEMAS, JEE_ADVANCED_SCHEMAS, NEET_SCHEMAS
 
 
 app = FastAPI(
     title="OMR Processing API",
-    description="OMR answer extraction for JEE Main and NEET templates.",
+    description="OMR answer extraction for JEE Main, JEE Advanced and NEET templates.",
     version="1.1.0",
 )
 
@@ -29,6 +34,10 @@ EXAMS = {
     "JEE_MAINS": {
         "label": "JEE Main",
         "schemas": JEE_MAIN_SCHEMAS,
+    },
+    "JEE_ADVANCED": {
+        "label": "JEE Advanced",
+        "schemas": JEE_ADVANCED_SCHEMAS,
     },
     "NEET": {
         "label": "NEET",
@@ -47,6 +56,8 @@ def normalize_exam(value: str) -> str:
     aliases = {
         "JEE_MAIN": "JEE_MAINS",
         "JEE_MAINS": "JEE_MAINS",
+        "JEE_ADVANCE": "JEE_ADVANCED",
+        "JEE_ADVANCED": "JEE_ADVANCED",
         "NEET": "NEET",
     }
     return aliases.get(value, value)
@@ -66,13 +77,20 @@ def validate_selection(exam: str, schema: str):
     if exam_key not in EXAMS:
         raise HTTPException(
             status_code=400,
-            detail="Invalid exam. Use JEE_MAINS or NEET."
+            detail="Invalid exam. Use JEE_MAINS, JEE_ADVANCED or NEET."
         )
 
     if schema_variant not in EXAMS[exam_key]["schemas"]:
         raise HTTPException(
             status_code=400,
-            detail="Invalid schema. Use SCHEMA_A, SCHEMA_B or SCHEMA_C."
+            detail=(
+                "Invalid schema for this exam. Available: "
+                + ", ".join(
+                    f"SCHEMA_{variant}"
+                    for variant in EXAMS[exam_key]["schemas"]
+                )
+                + "."
+            )
         )
 
     return exam_key, schema_variant, EXAMS[exam_key]["schemas"][schema_variant]
@@ -135,6 +153,12 @@ def extract_answers(image, exam_key, selected_schema):
                     image,
                     selected_schema
                 )
+            elif exam_key == "JEE_ADVANCED":
+                result, debug, roll_number = process_jee_advanced(
+                    image,
+                    selected_schema
+                )
+
             else:
                 result, debug, roll_number = process_neet(
                     image,

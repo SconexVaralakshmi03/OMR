@@ -55,8 +55,6 @@ JEE_MAIN_SCHEMA_A = {
 }
 
 
-
-
 # ============================================================
 # JEE MAIN - SCHEMA B
 # ============================================================
@@ -118,207 +116,6 @@ JEE_MAIN_SCHEMA_B = {
         },
     },
 }
-NEET_SCHEMA_A = {
-    "name": "NEET",
-    "template_width": 1083,
-    "template_height": 1452,
-    "options": ["1", "2", "3", "4"],
-
-    # --------------------------------------------------------
-    # NEET Roll Number
-    # --------------------------------------------------------
-    # 10 roll-number columns, each containing digits 0-9.
-    # The bubble grid is read top-to-bottom as 0,1,2,...,9.
-    # Coordinates are for the supplied 1083x1452 NEET template.
-    "roll_number": {
-        "length": 10,
-        "x_positions": [112, 138, 164, 190, 216, 244, 270, 296, 322, 348],
-        "digit_y_positions": [
-            168, 190, 212, 236, 258,
-            282, 304, 326, 350, 372
-        ],
-    },
-
-    "columns": [
-        {
-            "start_question": 1,
-            "x_positions": [473, 499, 525, 549],
-            "top_y_positions": [
-                98, 121, 144, 167, 190, 213, 236, 259, 281, 304,
-                327, 350, 374, 397, 420, 442, 465, 489, 513, 536,
-                559, 583, 605, 628, 651, 675, 699, 722, 745, 767,
-                791, 814, 838, 861, 884
-            ],
-            "bottom_y_positions": [
-                929, 952, 976, 999, 1022, 1045, 1067, 1090,
-                1114, 1137, 1160, 1183, 1206, 1229, 1252
-            ],
-        },
-        {
-            "start_question": 51,
-            "x_positions": [626, 651, 676, 701],
-            "top_y_positions": [
-                98, 121, 144, 167, 190, 213, 236, 259, 281, 304,
-                327, 350, 373, 397, 419, 443, 466, 490, 513, 536,
-                559, 582, 605, 628, 652, 675, 698, 722, 745, 768,
-                791, 814, 837, 861, 883
-            ],
-            "bottom_y_positions": [
-                930, 952, 976, 999, 1022, 1045, 1067, 1090,
-                1113, 1136, 1160, 1183, 1205, 1228, 1252
-            ],
-        },
-        {
-            "start_question": 101,
-            "x_positions": [781, 806, 831, 856],
-            "top_y_positions": [
-                98, 121, 145, 167, 190, 213, 236, 259, 281, 304,
-                327, 350, 374, 397, 421, 443, 466, 490, 513, 537,
-                560, 583, 605, 628, 652, 675, 699, 722, 745, 768,
-                791, 814, 837, 861, 884
-            ],
-            "bottom_y_positions": [
-                929, 952, 976, 999, 1022, 1045, 1067, 1090,
-                1114, 1137, 1160, 1183, 1206, 1228, 1252
-            ],
-        },
-        {
-            "start_question": 151,
-            "x_positions": [935, 961, 986, 1010],
-            "top_y_positions": [
-                98, 121, 145, 167, 190, 213, 236, 259, 281, 304,
-                327, 350, 374, 398, 420, 443, 466, 490, 513, 537,
-                560, 583, 605, 628, 651, 675, 698, 722, 745, 768,
-                791, 814, 838, 861, 884
-            ],
-            "bottom_y_positions": [
-                929, 952, 976, 999, 1022, 1045, 1067, 1090,
-                1114, 1137, 1160, 1183, 1207, 1229, 1252
-            ],
-        },
-    ],
-}
-
-# ============================================================
-# NEET - SCHEMA B
-# ============================================================
-# Exact geometry of the uploaded NEET Schema B image.
-#
-# IMPORTANT:
-# The supplied image is 1090 x 1443 and physically contains
-# 41 response rows in EACH response block, not 45.
-# Therefore this schema reads the 164 physical response rows
-# that actually exist in the supplied image.
-#
-# The printed labels say 1-45, 46-90, 91-135 and 136-180,
-# but several printed question labels are duplicated/missing.
-# We do NOT invent missing bubble rows or silently shift answers.
-# The physical rows are mapped sequentially:
-#   block 1 -> Q1-Q41
-#   block 2 -> Q46-Q86
-#   block 3 -> Q91-Q131
-#   block 4 -> Q136-Q176
-#
-# To support a true Q1-Q180 extraction, the source template must
-# contain 45 physical bubble rows in every block.
-# ============================================================
-
-NEET_SCHEMA_B = {
-    "name": "NEET",
-
-    # Exact dimensions of the supplied NEET Schema-B image.
-    "template_width": 646,
-    "template_height": 856,
-
-    # Response bubbles are printed as 1, 2, 3, 4.
-    "options": ["1", "2", "3", "4"],
-
-    # This template contains 4 response blocks with
-    # 45 physical rows in each block:
-    #   Block 1 -> Q1-Q45
-    #   Block 2 -> Q46-Q90
-    #   Block 3 -> Q91-Q135
-    #   Block 4 -> Q136-Q180
-    "total_questions": 180,
-    "physical_rows_per_block": 45,
-
-    # --------------------------------------------------------
-    # Roll Number
-    # --------------------------------------------------------
-    # The supplied image has 5 roll-number columns.
-    # Each column contains digits 0-9 from top to bottom.
-    "roll_number": {
-        "length": 5,
-
-        # Centers of the 5 roll-number columns.
-        "x_positions": [47, 70, 93, 116, 139],
-
-        # Digit rows: 0,1,2,...,9.
-        "digit_y_positions": [
-            113, 126, 138, 151, 163,
-            176, 188, 201, 213, 226
-        ],
-    },
-
-    # --------------------------------------------------------
-    # Response blocks
-    # --------------------------------------------------------
-    # The four blocks have the same 45 y positions.
-    # Only the x positions change from block to block.
-    "columns": [
-        {
-            "start_question": 1,
-            "x_positions": [75, 99, 123, 147],
-            "question_numbers": list(range(1, 46)),
-            "y_positions": [
-                260, 273, 285, 297, 309, 322, 334, 346, 358,
-                371, 383, 395, 407, 420, 432, 444, 456, 469,
-                481, 493, 505, 518, 530, 542, 554, 567, 579,
-                591, 603, 616, 628, 640, 653, 665, 677, 690,
-                702, 714, 726, 739, 751, 763, 776, 788, 801
-            ],
-        },
-        {
-            "start_question": 46,
-            "x_positions": [222, 246, 270, 294],
-            "question_numbers": list(range(46, 91)),
-            "y_positions": [
-                260, 273, 285, 297, 309, 322, 334, 346, 358,
-                371, 383, 395, 407, 420, 432, 444, 456, 469,
-                481, 493, 505, 518, 530, 542, 554, 567, 579,
-                591, 603, 616, 628, 640, 653, 665, 677, 690,
-                702, 714, 726, 739, 751, 763, 776, 788, 801
-            ],
-        },
-        {
-            "start_question": 91,
-            "x_positions": [369, 393, 417, 441],
-            "question_numbers": list(range(91, 136)),
-            "y_positions": [
-                260, 273, 285, 297, 309, 322, 334, 346, 358,
-                371, 383, 395, 407, 420, 432, 444, 456, 469,
-                481, 493, 505, 518, 530, 542, 554, 567, 579,
-                591, 603, 616, 628, 640, 653, 665, 677, 690,
-                702, 714, 726, 739, 751, 763, 776, 788, 801
-            ],
-        },
-        {
-            "start_question": 136,
-            "x_positions": [516, 540, 564, 588],
-            "question_numbers": list(range(136, 181)),
-            "y_positions": [
-                260, 273, 285, 297, 309, 322, 334, 346, 358,
-                371, 383, 395, 407, 420, 432, 444, 456, 469,
-                481, 493, 505, 518, 530, 542, 554, 567, 579,
-                591, 603, 616, 628, 640, 653, 665, 677, 690,
-                702, 714, 726, 739, 751, 763, 776, 788, 801
-            ],
-        },
-    ],
-}
-
-
-
 
 
 # ============================================================
@@ -546,6 +343,693 @@ JEE_MAIN_SCHEMA_C = {
 
 
 # ============================================================
+# JEE MAIN - SCHEMA D
+# ============================================================
+# Fourth JEE Main template (1240 x 1754, A4 scan, blue ink).
+#
+# Layout (three subjects, 25 questions each, 75 in total):
+#   Mathematics : Q1-Q20  MCQ (2 blocks of 10 rows, options A-D)
+#                 Q21-Q25 numerical (4 digit columns + minus bubble)
+#   Physics     : Q26-Q45 MCQ,  Q46-Q50 numerical
+#   Chemistry   : Q51-Q70 MCQ,  Q71-Q75 numerical
+#
+# Roll number : 7 columns x digits 0-9 (square bubbles, top right).
+# Series      : A/B/C/D (not part of the answer output).
+#
+# Numerical answer: each of the 4 digit columns is drawn as two
+# bubble columns side by side. The LEFT one holds digits 0-4 and
+# the RIGHT one holds digits 5-9 (row r -> left = r, right = r+5).
+# Each numerical question also has one minus-sign bubble at the
+# right of the last digit column.
+#
+# The scan is slightly tilted, so every block carries its own
+# measured x/y positions instead of one shared grid.
+# ============================================================
+
+JEE_MAIN_SCHEMA_D = {
+    "name": "JEE Main",
+    "template_width": 1240,
+    "template_height": 1754,
+    "options": ["A", "B", "C", "D"],
+    "layout": "mcq_split_numeric",
+
+    "roll_number": {
+        "length": 7,
+        "x_positions": [954, 972, 993, 1011, 1031, 1050, 1070],
+        "digit_y_positions": [303, 327, 350, 375, 397, 419, 443, 464, 487, 510],
+    },
+
+    "mcq_blocks": [
+        {
+            "subject": "Mathematics",
+            "start_question": 1,
+            "x_positions": [221, 240, 260, 279],
+            "y_positions": [293, 316, 339, 365, 387, 410, 434, 455, 478, 501],
+        },
+        {
+            "subject": "Mathematics",
+            "start_question": 11,
+            "x_positions": [336, 355, 375, 394],
+            "y_positions": [294, 317, 341, 367, 389, 411, 436, 457, 480, 502],
+        },
+        {
+            "subject": "Physics",
+            "start_question": 26,
+            "x_positions": [452, 471, 491, 510],
+            "y_positions": [296, 319, 343, 368, 390, 413, 437, 458, 482, 503],
+        },
+        {
+            "subject": "Physics",
+            "start_question": 36,
+            "x_positions": [568, 587, 607, 626],
+            "y_positions": [298, 321, 344, 370, 391, 414, 438, 459, 483, 504],
+        },
+        {
+            "subject": "Chemistry",
+            "start_question": 51,
+            "x_positions": [703, 722, 742, 760],
+            "y_positions": [300, 324, 347, 372, 394, 416, 440, 462, 484, 506],
+        },
+        {
+            "subject": "Chemistry",
+            "start_question": 61,
+            "x_positions": [819, 838, 858, 876],
+            "y_positions": [301, 324, 348, 374, 395, 417, 442, 462, 486, 507],
+        },
+    ],
+
+    "numeric_blocks": [
+        {
+            "subject": "Mathematics",
+            "question": 21,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [218, 230, 257, 270, 297, 310, 336, 349],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [571, 594, 617, 639, 662],
+            "minus": [372, 662],
+        },
+        {
+            "subject": "Mathematics",
+            "question": 22,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [218, 231, 257, 270, 297, 310, 336, 349],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [733, 756, 778, 801, 824],
+            "minus": [372, 824],
+        },
+        {
+            "subject": "Mathematics",
+            "question": 23,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [218, 230, 257, 270, 297, 310, 336, 349],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [892, 916, 940, 962, 986],
+            "minus": [372, 986],
+        },
+        {
+            "subject": "Mathematics",
+            "question": 24,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [217, 230, 257, 270, 296, 309, 336, 348],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [1053, 1077, 1101, 1125, 1148],
+            "minus": [371, 1148],
+        },
+        {
+            "subject": "Mathematics",
+            "question": 25,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [216, 229, 256, 269, 295, 308, 335, 348],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [1217, 1240, 1264, 1287, 1310],
+            "minus": [371, 1310],
+        },
+        {
+            "subject": "Physics",
+            "question": 46,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [526, 539, 566, 579, 605, 618, 645, 658],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [575, 598, 621, 643, 666],
+            "minus": [681, 666],
+        },
+        {
+            "subject": "Physics",
+            "question": 47,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [527, 539, 566, 579, 606, 618, 645, 658],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [736, 759, 782, 804, 828],
+            "minus": [681, 828],
+        },
+        {
+            "subject": "Physics",
+            "question": 48,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [526, 539, 566, 579, 606, 618, 645, 658],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [896, 919, 943, 966, 989],
+            "minus": [681, 989],
+        },
+        {
+            "subject": "Physics",
+            "question": 49,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [526, 539, 565, 578, 605, 618, 644, 657],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [1057, 1081, 1105, 1129, 1152],
+            "minus": [680, 1152],
+        },
+        {
+            "subject": "Physics",
+            "question": 50,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [525, 538, 565, 578, 604, 617, 644, 656],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [1220, 1244, 1268, 1292, 1314],
+            "minus": [679, 1314],
+        },
+        {
+            "subject": "Chemistry",
+            "question": 71,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [835, 848, 875, 888, 914, 927, 953, 966],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [554, 578, 601, 624, 646],
+            "minus": [989, 646],
+        },
+        {
+            "subject": "Chemistry",
+            "question": 72,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [835, 848, 875, 888, 914, 927, 954, 966],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [739, 762, 785, 808, 831],
+            "minus": [989, 831],
+        },
+        {
+            "subject": "Chemistry",
+            "question": 73,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [835, 848, 874, 888, 914, 927, 953, 966],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [899, 923, 946, 969, 992],
+            "minus": [989, 992],
+        },
+        {
+            "subject": "Chemistry",
+            "question": 74,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [835, 848, 874, 887, 913, 926, 953, 966],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [1060, 1084, 1108, 1133, 1156],
+            "minus": [989, 1156],
+        },
+        {
+            "subject": "Chemistry",
+            "question": 75,
+            # 8 bubble columns: (0-4, 5-9) for each of the 4 digits.
+            "x_positions": [834, 847, 873, 887, 913, 926, 952, 965],
+            # 5 rows: row r is digit r (left) / r+5 (right).
+            "y_positions": [1224, 1247, 1271, 1296, 1318],
+            "minus": [988, 1318],
+        },
+    ],
+}
+
+
+# ============================================================
+# JEE ADVANCED - SCHEMA A
+# ============================================================
+# A4 JEE Advanced practice OMR (magenta print, 1240 x 1754).
+#
+# Layout (3 parts, 18 questions each, 54 in total):
+#   Part I   : Q1-Q18
+#   Part II  : Q19-Q36
+#   Part III : Q37-Q54
+#
+# Inside every part:
+#   Section A : 6 rows   MCQ, MULTIPLE correct (options A-D)
+#   Section B : 8 numerical answers, each a grid of 5 digit
+#               columns x 12 rows ('-', '.', 0-9)
+#   Section C : 4 rows   paragraph type (MULTIPLE correct, A-D)
+#
+# Roll number : 8 columns x digits 0-9.
+#
+# Answer encoding:
+#   Section A -> letters joined in order, e.g. "A", "AC", "BCD"
+#   Section B -> the marked characters read left to right,
+#                e.g. "-12.5", "7", "0.25"
+#   Section C -> letters joined in order, e.g. "B", "BD"
+#
+# The bubble centres were fitted to the printed bubble grid of
+# the supplied template, so the width/height must not be changed.
+# ============================================================
+
+JEE_ADVANCED_SCHEMA_A = {
+    "name": "JEE Advanced",
+    "template_width": 1240,
+    "template_height": 1754,
+    "options": ["A", "B", "C", "D"],
+    "layout": "jee_advanced",
+    "total_questions": 54,
+    "numeric_options": ["-", ".", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+
+    "roll_number": {
+        "length": 8,
+        "x_positions": [988, 1012, 1036, 1061, 1085, 1110, 1134, 1159],
+        "digit_y_positions": [245, 268, 292, 315, 339, 362, 386, 410, 433, 457],
+    },
+
+    "mcq_blocks": [
+        {
+            "part": "Part I",
+            "section": "A",
+            "multi_correct": True,
+            "start_question": 1,
+            "x_positions": [122, 212, 303, 394],
+            "y_positions": [576, 599, 623, 646, 669, 693],
+        },
+        {
+            "part": "Part I",
+            "section": "C",
+            "multi_correct": True,
+            "start_question": 15,
+            "x_positions": [121, 212, 304, 395],
+            "y_positions": [1448, 1472, 1496, 1520],
+        },
+        {
+            "part": "Part II",
+            "section": "A",
+            "multi_correct": True,
+            "start_question": 19,
+            "x_positions": [495, 586, 677, 768],
+            "y_positions": [576, 599, 623, 646, 670, 693],
+        },
+        {
+            "part": "Part II",
+            "section": "C",
+            "multi_correct": True,
+            "start_question": 33,
+            "x_positions": [495, 586, 678, 769],
+            "y_positions": [1449, 1473, 1497, 1521],
+        },
+        {
+            "part": "Part III",
+            "section": "A",
+            "multi_correct": True,
+            "start_question": 37,
+            "x_positions": [869, 959, 1050, 1140],
+            "y_positions": [576, 600, 623, 646, 670, 693],
+        },
+        {
+            "part": "Part III",
+            "section": "C",
+            "multi_correct": True,
+            "start_question": 51,
+            "x_positions": [869, 960, 1050, 1141],
+            "y_positions": [1449, 1473, 1497, 1521],
+        },
+    ],
+
+    "numeric_blocks": [
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 7,
+            "x_positions": [78, 95, 112, 129, 146],
+            "y_positions": [789, 812, 836, 860, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 8,
+            "x_positions": [167, 184, 202, 219, 236],
+            "y_positions": [788, 812, 836, 859, 883, 906, 930, 954, 977, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 9,
+            "x_positions": [257, 274, 291, 309, 326],
+            "y_positions": [789, 812, 836, 859, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 10,
+            "x_positions": [346, 364, 381, 398, 416],
+            "y_positions": [789, 812, 836, 860, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 11,
+            "x_positions": [78, 95, 112, 129, 146],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 12,
+            "x_positions": [167, 184, 202, 218, 236],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 13,
+            "x_positions": [257, 274, 291, 308, 326],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part I",
+            "section": "B",
+            "question": 14,
+            "x_positions": [346, 364, 381, 398, 415],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 25,
+            "x_positions": [451, 468, 486, 503, 520],
+            "y_positions": [789, 812, 836, 860, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 26,
+            "x_positions": [541, 558, 575, 592, 610],
+            "y_positions": [789, 812, 836, 860, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 27,
+            "x_positions": [630, 647, 665, 682, 699],
+            "y_positions": [789, 812, 836, 859, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 28,
+            "x_positions": [720, 738, 755, 772, 789],
+            "y_positions": [789, 812, 836, 860, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 29,
+            "x_positions": [451, 468, 486, 502, 520],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 30,
+            "x_positions": [541, 558, 575, 592, 610],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 31,
+            "x_positions": [630, 648, 665, 682, 699],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part II",
+            "section": "B",
+            "question": 32,
+            "x_positions": [720, 738, 755, 772, 789],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 43,
+            "x_positions": [824, 842, 859, 876, 893],
+            "y_positions": [789, 812, 836, 860, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 44,
+            "x_positions": [914, 931, 948, 965, 982],
+            "y_positions": [789, 812, 836, 859, 883, 907, 930, 954, 977, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 45,
+            "x_positions": [1004, 1021, 1038, 1055, 1073],
+            "y_positions": [789, 812, 836, 859, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 46,
+            "x_positions": [1094, 1111, 1128, 1145, 1162],
+            "y_positions": [789, 812, 836, 859, 883, 907, 930, 954, 978, 1001, 1025, 1048],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 47,
+            "x_positions": [824, 842, 859, 876, 893],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 48,
+            "x_positions": [914, 931, 948, 966, 983],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 49,
+            "x_positions": [1004, 1021, 1038, 1056, 1073],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+        {
+            "part": "Part III",
+            "section": "B",
+            "question": 50,
+            "x_positions": [1093, 1110, 1128, 1145, 1162],
+            "y_positions": [1120, 1143, 1167, 1190, 1214, 1238, 1261, 1285, 1308, 1332, 1356, 1379],
+        },
+    ],
+}
+
+# ============================================================
+# NEET - SCHEMA A
+# ============================================================
+
+NEET_SCHEMA_A = {
+    "name": "NEET",
+    "template_width": 1083,
+    "template_height": 1452,
+    "options": ["1", "2", "3", "4"],
+
+    # --------------------------------------------------------
+    # NEET Roll Number
+    # --------------------------------------------------------
+    # 10 roll-number columns, each containing digits 0-9.
+    # The bubble grid is read top-to-bottom as 0,1,2,...,9.
+    # Coordinates are for the supplied 1083x1452 NEET template.
+    "roll_number": {
+        "length": 10,
+        "x_positions": [112, 138, 164, 190, 216, 244, 270, 296, 322, 348],
+        "digit_y_positions": [
+            168, 190, 212, 236, 258,
+            282, 304, 326, 350, 372
+        ],
+    },
+
+    "columns": [
+        {
+            "start_question": 1,
+            "x_positions": [473, 499, 525, 549],
+            "top_y_positions": [
+                98, 121, 144, 167, 190, 213, 236, 259, 281, 304,
+                327, 350, 374, 397, 420, 442, 465, 489, 513, 536,
+                559, 583, 605, 628, 651, 675, 699, 722, 745, 767,
+                791, 814, 838, 861, 884
+            ],
+            "bottom_y_positions": [
+                929, 952, 976, 999, 1022, 1045, 1067, 1090,
+                1114, 1137, 1160, 1183, 1206, 1229, 1252
+            ],
+        },
+        {
+            "start_question": 51,
+            "x_positions": [626, 651, 676, 701],
+            "top_y_positions": [
+                98, 121, 144, 167, 190, 213, 236, 259, 281, 304,
+                327, 350, 373, 397, 419, 443, 466, 490, 513, 536,
+                559, 582, 605, 628, 652, 675, 698, 722, 745, 768,
+                791, 814, 837, 861, 883
+            ],
+            "bottom_y_positions": [
+                930, 952, 976, 999, 1022, 1045, 1067, 1090,
+                1113, 1136, 1160, 1183, 1205, 1228, 1252
+            ],
+        },
+        {
+            "start_question": 101,
+            "x_positions": [781, 806, 831, 856],
+            "top_y_positions": [
+                98, 121, 145, 167, 190, 213, 236, 259, 281, 304,
+                327, 350, 374, 397, 421, 443, 466, 490, 513, 537,
+                560, 583, 605, 628, 652, 675, 699, 722, 745, 768,
+                791, 814, 837, 861, 884
+            ],
+            "bottom_y_positions": [
+                929, 952, 976, 999, 1022, 1045, 1067, 1090,
+                1114, 1137, 1160, 1183, 1206, 1228, 1252
+            ],
+        },
+        {
+            "start_question": 151,
+            "x_positions": [935, 961, 986, 1010],
+            "top_y_positions": [
+                98, 121, 145, 167, 190, 213, 236, 259, 281, 304,
+                327, 350, 374, 398, 420, 443, 466, 490, 513, 537,
+                560, 583, 605, 628, 651, 675, 698, 722, 745, 768,
+                791, 814, 838, 861, 884
+            ],
+            "bottom_y_positions": [
+                929, 952, 976, 999, 1022, 1045, 1067, 1090,
+                1114, 1137, 1160, 1183, 1207, 1229, 1252
+            ],
+        },
+    ],
+}
+
+
+# ============================================================
+# NEET - SCHEMA B
+# ============================================================
+# Exact geometry of the uploaded NEET Schema B image.
+#
+# IMPORTANT:
+# The supplied image is 1090 x 1443 and physically contains
+# 41 response rows in EACH response block, not 45.
+# Therefore this schema reads the 164 physical response rows
+# that actually exist in the supplied image.
+#
+# The printed labels say 1-45, 46-90, 91-135 and 136-180,
+# but several printed question labels are duplicated/missing.
+# We do NOT invent missing bubble rows or silently shift answers.
+# The physical rows are mapped sequentially:
+#   block 1 -> Q1-Q41
+#   block 2 -> Q46-Q86
+#   block 3 -> Q91-Q131
+#   block 4 -> Q136-Q176
+#
+# To support a true Q1-Q180 extraction, the source template must
+# contain 45 physical bubble rows in every block.
+# ============================================================
+
+NEET_SCHEMA_B = {
+    "name": "NEET",
+
+    # Exact dimensions of the supplied NEET Schema-B image.
+    "template_width": 646,
+    "template_height": 856,
+
+    # Response bubbles are printed as 1, 2, 3, 4.
+    "options": ["1", "2", "3", "4"],
+
+    # This template contains 4 response blocks with
+    # 45 physical rows in each block:
+    #   Block 1 -> Q1-Q45
+    #   Block 2 -> Q46-Q90
+    #   Block 3 -> Q91-Q135
+    #   Block 4 -> Q136-Q180
+    "total_questions": 180,
+    "physical_rows_per_block": 45,
+
+    # --------------------------------------------------------
+    # Roll Number
+    # --------------------------------------------------------
+    # The supplied image has 5 roll-number columns.
+    # Each column contains digits 0-9 from top to bottom.
+    "roll_number": {
+        "length": 5,
+
+        # Centers of the 5 roll-number columns.
+        "x_positions": [47, 70, 93, 116, 139],
+
+        # Digit rows: 0,1,2,...,9.
+        "digit_y_positions": [
+            113, 126, 138, 151, 163,
+            176, 188, 201, 213, 226
+        ],
+    },
+
+    # --------------------------------------------------------
+    # Response blocks
+    # --------------------------------------------------------
+    # The four blocks have the same 45 y positions.
+    # Only the x positions change from block to block.
+    "columns": [
+        {
+            "start_question": 1,
+            "x_positions": [75, 99, 123, 147],
+            "question_numbers": list(range(1, 46)),
+            "y_positions": [
+                260, 273, 285, 297, 309, 322, 334, 346, 358,
+                371, 383, 395, 407, 420, 432, 444, 456, 469,
+                481, 493, 505, 518, 530, 542, 554, 567, 579,
+                591, 603, 616, 628, 640, 653, 665, 677, 690,
+                702, 714, 726, 739, 751, 763, 776, 788, 801
+            ],
+        },
+        {
+            "start_question": 46,
+            "x_positions": [222, 246, 270, 294],
+            "question_numbers": list(range(46, 91)),
+            "y_positions": [
+                260, 273, 285, 297, 309, 322, 334, 346, 358,
+                371, 383, 395, 407, 420, 432, 444, 456, 469,
+                481, 493, 505, 518, 530, 542, 554, 567, 579,
+                591, 603, 616, 628, 640, 653, 665, 677, 690,
+                702, 714, 726, 739, 751, 763, 776, 788, 801
+            ],
+        },
+        {
+            "start_question": 91,
+            "x_positions": [369, 393, 417, 441],
+            "question_numbers": list(range(91, 136)),
+            "y_positions": [
+                260, 273, 285, 297, 309, 322, 334, 346, 358,
+                371, 383, 395, 407, 420, 432, 444, 456, 469,
+                481, 493, 505, 518, 530, 542, 554, 567, 579,
+                591, 603, 616, 628, 640, 653, 665, 677, 690,
+                702, 714, 726, 739, 751, 763, 776, 788, 801
+            ],
+        },
+        {
+            "start_question": 136,
+            "x_positions": [516, 540, 564, 588],
+            "question_numbers": list(range(136, 181)),
+            "y_positions": [
+                260, 273, 285, 297, 309, 322, 334, 346, 358,
+                371, 383, 395, 407, 420, 432, 444, 456, 469,
+                481, 493, 505, 518, 530, 542, 554, 567, 579,
+                591, 603, 616, 628, 640, 653, 665, 677, 690,
+                702, 714, 726, 739, 751, 763, 776, 788, 801
+            ],
+        },
+    ],
+}
+
+
+# ============================================================
 # NEET - SCHEMA C
 # ============================================================
 # Third NEET template (1241 x 1754, letters A-D).
@@ -629,11 +1113,12 @@ NEET_SCHEMA_C = {
 }
 
 
-# JEE Main variants. The user selects JEE Main first, then A or B.
+# JEE Main variants. The user selects JEE Main first, then A, B, C or D.
 JEE_MAIN_SCHEMAS = {
     "A": JEE_MAIN_SCHEMA_A,
     "B": JEE_MAIN_SCHEMA_B,
     "C": JEE_MAIN_SCHEMA_C,
+    "D": JEE_MAIN_SCHEMA_D,
 }
 
 # NEET variants. The user selects NEET first, then A, B or C.
@@ -643,10 +1128,17 @@ NEET_SCHEMAS = {
     "C": NEET_SCHEMA_C,
 }
 
+# JEE Advanced variants. The user selects JEE Advanced first, then A.
+JEE_ADVANCED_SCHEMAS = {
+    "A": JEE_ADVANCED_SCHEMA_A,
+}
+
 # Exam selection:
 # 1 = JEE Main
 # 2 = NEET
+# 3 = JEE Advanced
 SCHEMAS = {
     "1": JEE_MAIN_SCHEMA_A,
     "2": NEET_SCHEMA_A,
+    "3": JEE_ADVANCED_SCHEMA_A,
 }

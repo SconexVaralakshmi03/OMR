@@ -13,9 +13,16 @@ import streamlit as st
 # CONFIGURATION
 # ============================================================
 
-API_URL = "https://unpenurious-nonintrovertedly-ai.ngrok-free.dev"  # Change this to your FastAPI backend URL if needed
+API_URL = "http://localhost:8000"  # Change this to your FastAPI backend URL if needed
 BASE_DIR = Path(__file__).resolve().parent
 IMAGE_DIR = BASE_DIR / "images"
+
+# Schemas available for each course.
+COURSE_SCHEMAS = {
+    "JEE_MAINS": ["SCHEMA_A", "SCHEMA_B", "SCHEMA_C", "SCHEMA_D"],
+    "JEE_ADVANCED": ["SCHEMA_A"],
+    "NEET": ["SCHEMA_A", "SCHEMA_B", "SCHEMA_C"],
+}
 
 IMAGE_TYPES = [
     "jpg",
@@ -233,48 +240,45 @@ def reset_all():
 def course_label():
     if st.session_state.course == "JEE_MAINS":
         return "JEE Main"
+    if st.session_state.course == "JEE_ADVANCED":
+        return "JEE Advanced"
     return "NEET"
 
 
 def get_preview_path():
     """
-    Looks for common preview filenames.
+    Looks for the preview image of the selected course and schema.
 
-    Supported names:
-      images/jee_schema_a.png
-      images/jee_schema_b.png
-      images/jee_schema_c.png
-      images/neet_schema_a.png
-      images/neet_schema_b.png
-      images/neet_schema_c.png
-
-    Also tries common JPG/JPEG/WebP variants.
+    Supported names (any of png/jpg/jpeg/webp, any letter case):
+      images/jee_schema_a.png ... jee_schema_d.png
+      images/jee_advanced_schema_a.png   (also: jee_advance_schema_a.png)
+      images/neet_schema_a.png ... neet_schema_c.png
     """
-    prefix = (
-        "jee"
-        if st.session_state.course == "JEE_MAINS"
-        else "neet"
-    )
+    prefixes = {
+        "JEE_MAINS": ["jee"],
+        "JEE_ADVANCED": ["jee_advanced", "jee_advance"],
+        "NEET": ["neet"],
+    }.get(st.session_state.course, ["neet"])
 
     schema = {
         "SCHEMA_A": "schema_a",
         "SCHEMA_B": "schema_b",
         "SCHEMA_C": "schema_c",
+        "SCHEMA_D": "schema_d",
     }.get(st.session_state.schema, "schema_a")
 
-    candidates = [
-        f"{prefix}_{schema}.png",
-        f"{prefix}_{schema}.jpg",
-        f"{prefix}_{schema}.jpeg",
-        f"{prefix}_{schema}.webp",
-        f"{prefix}_{schema}.PNG",
-        f"{prefix}_{schema}.JPG",
-        f"{prefix}_{schema}.JPEG",
-    ]
+    wanted = {
+        f"{prefix}_{schema}.{ext}"
+        for prefix in prefixes
+        for ext in ("png", "jpg", "jpeg", "webp")
+    }
 
-    for name in candidates:
-        path = IMAGE_DIR / name
-        if path.exists():
+    if not IMAGE_DIR.is_dir():
+        return None
+
+    # Case-insensitive match so JPG/PNG/Jpeg etc. all work.
+    for path in sorted(IMAGE_DIR.iterdir()):
+        if path.is_file() and path.name.lower() in wanted:
             return path
 
     return None
@@ -310,7 +314,175 @@ def get_answer(result, question):
     return answer_value(value)
 
 
+# ------------------------------------------------------------
+# JEE ADVANCED scoring
+# ------------------------------------------------------------
+# Every part has 18 questions:
+#   Q1-6   Section A  multiple correct   (max 4 each)
+#   Q7-14  Section B  numerical          (max 3 each)
+#   Q15-18 Section C  paragraph          (max 3 each)
+# 3 parts -> 18*4 + 24*3 + 12*3 = 180 marks.
+#
+# MULTIPLE CORRECT
+#   exactly the correct set ........ +4
+#   otherwise, each correct bubble .. +1
+#              any wrong bubble ..... -2
+#   e.g. key ABC, student ABCD -> 3 - 2 = +1
+#        key ABC, student AB   -> +2
+#        blank                 -> 0
+# NUMERICAL  : correct +3, wrong 0, blank 0
+# PARAGRAPH  : the whole set must match -> +3, otherwise -1, blank 0
+#
+# Set this to True to charge -2 for EVERY wrong bubble instead of
+# a single -2 per question.
+ADV_PENALTY_PER_WRONG_BUBBLE = False
+
+ADV_QUESTIONS_PER_PART = 18
+ADV_MULTI_MAX = 4
+ADV_NUMERIC_MAX = 3
+ADV_PARAGRAPH_MAX = 3
+ADV_MULTI_WRONG = -2
+ADV_PARAGRAPH_WRONG = -1
+
+
+def adv_question_type(question):
+    position = (question - 1) % ADV_QUESTIONS_PER_PART + 1
+
+    if position <= 6:
+        return "MULTI"
+    if position <= 14:
+        return "NUMERIC"
+    return "PARAGRAPH"
+
+
+def adv_max_marks(question):
+    return {
+        "MULTI": ADV_MULTI_MAX,
+        "NUMERIC": ADV_NUMERIC_MAX,
+        "PARAGRAPH": ADV_PARAGRAPH_MAX,
+    }[adv_question_type(question)]
+
+
+def adv_numbers_equal(a, b):
+    try:
+        return abs(float(a) - float(b)) < 1e-9
+    except (TypeError, ValueError):
+        return a == b
+
+
+def adv_score(question, key, student):
+    """Return marks for one attempted question."""
+    kind = adv_question_type(question)
+
+    if kind == "MULTI":
+        key_set, stu_set = set(key), set(student)
+
+        if stu_set == key_set:
+            return ADV_MULTI_MAX
+
+        right = len(stu_set & key_set)
+        wrong = len(stu_set - key_set)
+
+        if wrong:
+            penalty = wrong if ADV_PENALTY_PER_WRONG_BUBBLE else 1
+            return right + ADV_MULTI_WRONG * penalty
+
+        return right  # partial credit, no wrong bubble
+
+    if kind == "NUMERIC":
+        if student != "INVALID" and adv_numbers_equal(key, student):
+            return ADV_NUMERIC_MAX
+        return 0
+
+    # PARAGRAPH: the complete set must match.
+    if student != "INVALID" and set(student) == set(key):
+        return ADV_PARAGRAPH_MAX
+    return ADV_PARAGRAPH_WRONG
+
+
+def evaluate_advanced(student_result, answer_key_result):
+    key_answers = answer_key_result.get("answers", {})
+    student_answers = student_result.get("answers", {})
+
+    questions = sorted(
+        int(q) for q in key_answers.keys() if str(q).isdigit()
+    )
+
+    rows = []
+    correct = partial = wrong = not_attempted = 0
+    positive = negative = max_marks = 0
+
+    for question in questions:
+        key = answer_value(key_answers.get(str(question)))
+        student = answer_value(student_answers.get(str(question)))
+        maximum = adv_max_marks(question)
+        max_marks += maximum
+
+        if key is None or key == "INVALID":
+            rows.append(
+                {
+                    "Question": f"Q{question}",
+                    "Correct Answer": "KEY BLANK",
+                    "Student Answer": (
+                        student if student is not None else "Not Attempted"
+                    ),
+                    "Status": "Invalid Key",
+                    "Marks": 0,
+                }
+            )
+            continue
+
+        if student is None:
+            status, marks = "Not Attempted", 0
+            not_attempted += 1
+        else:
+            marks = adv_score(question, key, student)
+
+            if marks == maximum:
+                status = "Correct"
+                correct += 1
+            elif marks > 0:
+                status = "Partial"
+                partial += 1
+            else:
+                status = "Wrong"
+                wrong += 1
+
+        if marks > 0:
+            positive += marks
+        else:
+            negative += -marks
+
+        rows.append(
+            {
+                "Question": f"Q{question}",
+                "Correct Answer": key,
+                "Student Answer": (
+                    student if student is not None else "Not Attempted"
+                ),
+                "Status": status,
+                "Marks": marks,
+            }
+        )
+
+    return {
+        "total_questions": len(questions),
+        "correct": correct,
+        "partial": partial,
+        "wrong": wrong,
+        "not_attempted": not_attempted,
+        "positive_marks": positive,
+        "negative_marks": negative,
+        "final_score": positive - negative,
+        "max_marks": max_marks,
+        "rows": rows,
+    }
+
+
 def evaluate(student_result, answer_key_result):
+    if st.session_state.course == "JEE_ADVANCED":
+        return evaluate_advanced(student_result, answer_key_result)
+
     key_answers = answer_key_result.get("answers", {})
 
     student_answers = student_result.get("answers", {})
@@ -404,6 +576,8 @@ def evaluate(student_result, answer_key_result):
         "wrong": wrong,
         "not_attempted": not_attempted,
         "final_score": final_score,
+        "positive_marks": correct * 4,
+        "negative_marks": wrong,
         "rows": rows,
     }
 
@@ -463,9 +637,11 @@ def create_download_json():
         "correct": evaluation["correct"],
         "wrong": evaluation["wrong"],
         "not_attempted": evaluation["not_attempted"],
-        "correct_marks": evaluation["correct"] * 4,
-        "negative_marks": evaluation["wrong"],
+        "partial": evaluation.get("partial", 0),
+        "correct_marks": evaluation["positive_marks"],
+        "negative_marks": evaluation["negative_marks"],
         "final_score": evaluation["final_score"],
+        "max_marks": evaluation.get("max_marks"),
         "question_wise_results": evaluation["rows"],
     }
 
@@ -494,7 +670,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     if st.button(
@@ -507,6 +683,16 @@ with col1:
         st.rerun()
 
 with col2:
+    if st.button(
+        "🚀 JEE ADVANCED",
+        use_container_width=True,
+        type="primary",
+    ):
+        reset_all()
+        st.session_state.course = "JEE_ADVANCED"
+        st.rerun()
+
+with col3:
     if st.button(
         "🩺 NEET",
         use_container_width=True,
@@ -535,43 +721,26 @@ if st.session_state.course:
         unsafe_allow_html=True,
     )
 
-    col1, col2, col3 = st.columns(3)
+    available_schemas = COURSE_SCHEMAS.get(
+        st.session_state.course,
+        [],
+    )
 
-    with col1:
-        if st.button(
-            "📄 SCHEMA A",
-            use_container_width=True,
-        ):
-            st.session_state.schema = "SCHEMA_A"
-            st.session_state.answer_key_result = None
-            st.session_state.answer_key_name = None
-            st.session_state.student_result = None
-            st.session_state.evaluation = None
-            st.rerun()
+    schema_columns = st.columns(len(available_schemas))
 
-    with col2:
-        if st.button(
-            "📄 SCHEMA B",
-            use_container_width=True,
-        ):
-            st.session_state.schema = "SCHEMA_B"
-            st.session_state.answer_key_result = None
-            st.session_state.answer_key_name = None
-            st.session_state.student_result = None
-            st.session_state.evaluation = None
-            st.rerun()
-
-    with col3:
-        if st.button(
-            "📄 SCHEMA C",
-            use_container_width=True,
-        ):
-            st.session_state.schema = "SCHEMA_C"
-            st.session_state.answer_key_result = None
-            st.session_state.answer_key_name = None
-            st.session_state.student_result = None
-            st.session_state.evaluation = None
-            st.rerun()
+    for column, schema_name in zip(schema_columns, available_schemas):
+        with column:
+            if st.button(
+                f"📄 {schema_name.replace('_', ' ')}",
+                use_container_width=True,
+                key=f"schema_button_{schema_name}",
+            ):
+                st.session_state.schema = schema_name
+                st.session_state.answer_key_result = None
+                st.session_state.answer_key_name = None
+                st.session_state.student_result = None
+                st.session_state.evaluation = None
+                st.rerun()
 
 
 # ============================================================
@@ -613,10 +782,9 @@ if st.session_state.schema:
         )
 
         st.caption(
-            "Expected one of these filenames: "
-            f"{course_label().lower().replace(' ', '_')}_"
-            f"{st.session_state.schema.lower()}.png "
-            "inside the images folder."
+            f"Looked in: {IMAGE_DIR}  |  Expected a file like "
+            f"{'jee_advanced' if st.session_state.course == 'JEE_ADVANCED' else course_label().lower().replace(' ', '_')}_"
+            f"{st.session_state.schema.lower()}.png"
         )
 
 
@@ -836,12 +1004,21 @@ if (
         # available in the downloadable report.
         st.markdown("### 📊 Result Summary")
 
+        partial = evaluation.get("partial", 0)
+        attempted = (
+            evaluation["correct"] + partial + evaluation["wrong"]
+        )
+        is_advanced = st.session_state.course == "JEE_ADVANCED"
+
         total_questions = evaluation["total_questions"]
-        attempted = evaluation["correct"] + evaluation["wrong"]
         correct = evaluation["correct"]
         wrong = evaluation["wrong"]
         not_attempted = evaluation["not_attempted"]
         final_score = evaluation["final_score"]
+
+        score_suffix = (
+            f" (out of {evaluation['max_marks']})" if is_advanced else ""
+        )
 
         st.markdown(
             f"""
@@ -867,7 +1044,7 @@ if (
                     <div class="summary-value">{not_attempted}</div>
                 </div>
                 <div class="summary-item score-item">
-                    <div class="summary-label">Total Score</div>
+                    <div class="summary-label">Total Score{score_suffix}</div>
                     <div class="summary-value score-value">{final_score}</div>
                 </div>
             </div>
@@ -947,6 +1124,10 @@ if (
         csv_buffer.write(
             f"Correct,{evaluation['correct']}\n"
         )
+        if "partial" in evaluation:
+            csv_buffer.write(
+                f"Partial,{evaluation['partial']}\n"
+            )
         csv_buffer.write(
             f"Wrong,{evaluation['wrong']}\n"
         )

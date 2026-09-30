@@ -5,7 +5,12 @@ import numpy as np
 import json
 import os
 
-from app.schemas import SCHEMAS, JEE_MAIN_SCHEMAS, NEET_SCHEMAS
+from app.schemas import (
+    SCHEMAS,
+    JEE_MAIN_SCHEMAS,
+    JEE_ADVANCED_SCHEMAS,
+    NEET_SCHEMAS,
+)
 
 
 # ============================================================
@@ -32,14 +37,15 @@ def select_omr_type():
     print("\nSelect OMR type:")
     print("1. JEE Main")
     print("2. NEET")
+    print("3. JEE Advanced")
 
     while True:
-        choice = input("\nEnter option (1/2): ").strip()
+        choice = input("\nEnter option (1/2/3): ").strip()
 
         if choice in SCHEMAS:
             return choice
 
-        print("Invalid choice. Enter 1 or 2.")
+        print("Invalid choice. Enter 1, 2 or 3.")
 
 
 # ============================================================
@@ -54,14 +60,35 @@ def select_jee_main_schema():
     print("A. Existing JEE Main format")
     print("B. New JEE Main format")
     print("C. JEE Main format with numerical grids")
+    print("D. JEE Main format, 75 questions (blue ink, split numeric)")
 
     while True:
-        variant = input("\nEnter schema (A/B/C): ").strip().upper()
+        variant = input("\nEnter schema (A/B/C/D): ").strip().upper()
 
         if variant in JEE_MAIN_SCHEMAS:
             return variant
 
-        print("Invalid choice. Enter A, B or C.")
+        print("Invalid choice. Enter A, B, C or D.")
+
+
+# ============================================================
+# Select JEE Advanced schema
+# ============================================================
+
+def select_jee_advanced_schema():
+    print("\n" + "=" * 60)
+    print("             JEE ADVANCED SCHEMA")
+    print("=" * 60)
+    print("\nSelect JEE Advanced OMR schema:")
+    print("A. JEE Advanced format, 54 questions (MCQ, numerical, paragraph)")
+
+    while True:
+        variant = input("\nEnter schema (A): ").strip().upper()
+
+        if variant in JEE_ADVANCED_SCHEMAS:
+            return variant
+
+        print("Invalid choice. Enter A.")
 
 
 # ============================================================
@@ -268,6 +295,10 @@ def read_roll_number(image, roll_schema):
 # ============================================================
 
 def process_jee_main(image, schema):
+    # Schema D: split MCQ blocks + 4-digit numerical answers.
+    if schema.get("layout") == "mcq_split_numeric":
+        return process_jee_main_schema_d(image, schema)
+
     # Schema C uses a different mixed MCQ/numerical layout.
     if "numeric_questions" in schema:
         return process_jee_main_schema_c(image, schema)
@@ -473,6 +504,434 @@ def process_jee_main_schema_c(image, schema):
     return result, debug, roll_number
 
 
+
+# ============================================================
+# JEE MAIN SCHEMA D  (blue ink, 75 questions)
+# ============================================================
+# The Schema D sheet is filled with BLUE ink (light blue in the
+# numerical grids), so the "all BGR channels dark" test used by
+# the other schemas would miss it. Schema D therefore measures
+# darkness on the grayscale image, which treats navy and blue
+# ink as dark and leaves the white bubble interiors alone.
+#
+# Every bubble is also tested at a few tiny shifts and the best
+# score is kept, so a slightly tilted scan still reads correctly.
+
+INK_GRAY_MAX = 120
+SCHEMA_D_FILLED_THRESHOLD = 0.60
+
+
+def ink_ratio_gray(
+    gray,
+    x,
+    y,
+    rx=5,
+    ry=5,
+    shift_x=(-2, 0, 2),
+    shift_y=(-2, 0, 2),
+):
+    """Fraction of dark pixels inside an ellipse (best of a few shifts)."""
+    h, w = gray.shape[:2]
+    best = 0.0
+
+    for dy in shift_y:
+        for dx in shift_x:
+            cx = int(round(x)) + dx
+            cy = int(round(y)) + dy
+
+            x1 = max(0, cx - rx)
+            x2 = min(w, cx + rx + 1)
+            y1 = max(0, cy - ry)
+            y2 = min(h, cy + ry + 1)
+
+            roi = gray[y1:y2, x1:x2]
+
+            if roi.size == 0:
+                continue
+
+            yy, xx = np.ogrid[:roi.shape[0], :roi.shape[1]]
+            mask = (
+                ((xx - (cx - x1)) / float(rx)) ** 2 +
+                ((yy - (cy - y1)) / float(ry)) ** 2
+            ) <= 1.0
+
+            pixels = roi[mask]
+
+            if pixels.size == 0:
+                continue
+
+            best = max(best, float(np.mean(pixels < INK_GRAY_MAX)))
+
+    return best
+
+
+def read_roll_number_schema_d(gray, roll_schema):
+    """7 columns x digits 0-9 (square bubbles)."""
+    digits = []
+
+    for x in roll_schema["x_positions"]:
+        scores = [
+            ink_ratio_gray(
+                gray, x, y,
+                rx=5, ry=6,
+                shift_x=(-2, 0, 2),
+                shift_y=(-2, 0, 2),
+            )
+            for y in roll_schema["digit_y_positions"]
+        ]
+
+        marked = [
+            digit
+            for digit, score in enumerate(scores)
+            if score >= SCHEMA_D_FILLED_THRESHOLD
+        ]
+
+        if not marked:
+            digits.append(None)
+        elif len(marked) > 1:
+            digits.append("INVALID")
+        else:
+            digits.append(str(marked[0]))
+
+    if any(d in (None, "INVALID") for d in digits):
+        return None, digits
+
+    return "".join(digits), digits
+
+
+def read_schema_d_numeric_question(gray, block):
+    """
+    One numerical answer: 4 digit columns + a minus bubble.
+
+    Each digit column is two bubble columns side by side:
+      left  column, rows 0-4 -> digits 0-4
+      right column, rows 0-4 -> digits 5-9
+    Blank digit columns are skipped when the answer is assembled.
+    """
+    xs = block["x_positions"]
+    ys = block["y_positions"]
+    digits = []
+
+    for d in range(4):
+        left_x = xs[2 * d]
+        right_x = xs[2 * d + 1]
+        marked = []
+
+        for row, y in enumerate(ys):
+            if ink_ratio_gray(
+                gray, left_x, y,
+                rx=3, ry=6,
+                shift_x=(-1, 0, 1),
+                shift_y=(-2, 0, 2),
+            ) >= SCHEMA_D_FILLED_THRESHOLD:
+                marked.append(row)
+
+            if ink_ratio_gray(
+                gray, right_x, y,
+                rx=3, ry=6,
+                shift_x=(-1, 0, 1),
+                shift_y=(-2, 0, 2),
+            ) >= SCHEMA_D_FILLED_THRESHOLD:
+                marked.append(row + 5)
+
+        if not marked:
+            digits.append("")
+        elif len(marked) > 1:
+            digits.append("INVALID")
+        else:
+            digits.append(str(marked[0]))
+
+    minus_x, minus_y = block["minus"]
+    negative = ink_ratio_gray(
+        gray, minus_x, minus_y,
+        rx=3, ry=6,
+        shift_x=(-1, 0, 1),
+        shift_y=(-2, 0, 2),
+    ) >= SCHEMA_D_FILLED_THRESHOLD
+
+    if "INVALID" in digits:
+        return "INVALID", digits, negative
+
+    text = "".join(digits)
+
+    if not text:
+        # Nothing marked (a lone minus sign is not a valid answer).
+        return ("INVALID" if negative else None), digits, negative
+
+    return ("-" + text if negative else text), digits, negative
+
+
+def process_jee_main_schema_d(image, schema):
+    debug = image.copy()
+    result = {}
+    options = schema["options"]
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Roll number (7-column grid).
+    roll_number, _roll_debug = read_roll_number_schema_d(
+        gray,
+        schema["roll_number"]
+    )
+
+    # MCQ blocks: Q1-20, Q26-45, Q51-70.
+    for block in schema["mcq_blocks"]:
+        for row, y in enumerate(block["y_positions"]):
+            question_number = block["start_question"] + row
+
+            scores = [
+                ink_ratio_gray(gray, x, y, rx=5, ry=5)
+                for x in block["x_positions"]
+            ]
+
+            marked = [
+                i for i, score in enumerate(scores)
+                if score >= SCHEMA_D_FILLED_THRESHOLD
+            ]
+
+            if not marked:
+                answer = None
+            elif len(marked) > 1:
+                answer = "INVALID"
+            else:
+                answer = options[marked[0]]
+
+            result[str(question_number)] = answer
+
+            if answer in options:
+                index = options.index(answer)
+                cv2.circle(
+                    debug,
+                    (block["x_positions"][index], y),
+                    10,
+                    (0, 200, 0),
+                    2
+                )
+
+    # Numerical questions: Q21-25, Q46-50, Q71-75.
+    for block in schema["numeric_blocks"]:
+        answer, _digits, _neg = read_schema_d_numeric_question(
+            gray,
+            block
+        )
+
+        result[str(block["question"])] = answer
+
+    expected_questions = {str(i) for i in range(1, 76)}
+
+    if set(result.keys()) != expected_questions:
+        missing = sorted(
+            expected_questions - set(result.keys()),
+            key=int
+        )
+
+        raise ValueError(
+            "JEE Main Schema D extraction did not produce "
+            f"all 75 questions. Missing: {missing}"
+        )
+
+    # Keep answers in question order (1, 2, 3 ... 75).
+    result = {
+        str(i): result[str(i)]
+        for i in range(1, 76)
+    }
+
+    return result, debug, roll_number
+
+
+# ============================================================
+# JEE ADVANCED  (magenta print, black / blue ink)
+# ============================================================
+# The JEE Advanced sheet is printed in magenta and may be filled
+# with black OR blue ink. A pixel counts as ink when its RED
+# channel is low: magenta print always has a high red channel,
+# while black and blue ink both have a low one. Every bubble is
+# tested at a few tiny shifts (best score kept) so a slightly
+# tilted scan still reads correctly.
+
+ADV_INK_RED_MAX = 120
+ADV_FILLED_THRESHOLD = 0.35
+
+
+def ink_ratio_advanced(image, x, y, radius=5, shifts=(-2, 0, 2)):
+    """Fraction of ink pixels inside a circle (best of a few shifts)."""
+    h, w = image.shape[:2]
+    best = 0.0
+
+    for dy in shifts:
+        for dx in shifts:
+            cx = int(round(x)) + dx
+            cy = int(round(y)) + dy
+
+            x1 = max(0, cx - radius)
+            x2 = min(w, cx + radius + 1)
+            y1 = max(0, cy - radius)
+            y2 = min(h, cy + radius + 1)
+
+            roi = image[y1:y2, x1:x2]
+
+            if roi.size == 0:
+                continue
+
+            yy, xx = np.ogrid[:roi.shape[0], :roi.shape[1]]
+            mask = (
+                (xx - (cx - x1)) ** 2 +
+                (yy - (cy - y1)) ** 2
+            ) <= radius ** 2
+
+            pixels = roi[mask]
+
+            if pixels.size == 0:
+                continue
+
+            # OpenCV is BGR -> channel 2 is red.
+            best = max(
+                best,
+                float(np.mean(pixels[:, 2] < ADV_INK_RED_MAX))
+            )
+
+    return best
+
+
+def read_roll_number_advanced(image, roll_schema):
+    """8 columns x digits 0-9."""
+    digits = []
+
+    for x in roll_schema["x_positions"]:
+        marked = [
+            digit
+            for digit, y in enumerate(roll_schema["digit_y_positions"])
+            if ink_ratio_advanced(image, x, y, radius=4)
+            >= ADV_FILLED_THRESHOLD
+        ]
+
+        if not marked:
+            digits.append(None)
+        elif len(marked) > 1:
+            digits.append("INVALID")
+        else:
+            digits.append(str(marked[0]))
+
+    if any(d in (None, "INVALID") for d in digits):
+        return None, digits
+
+    return "".join(digits), digits
+
+
+def read_advanced_numeric_question(image, block, numeric_options):
+    """
+    One numerical answer: 5 columns x 12 rows ('-', '.', 0-9).
+
+    Blank columns are skipped and the marked characters are
+    joined left to right, e.g. "-12.5".
+    """
+    selected = []
+
+    for x in block["x_positions"]:
+        marked = [
+            i
+            for i, y in enumerate(block["y_positions"])
+            if ink_ratio_advanced(image, x, y, radius=4)
+            >= ADV_FILLED_THRESHOLD
+        ]
+
+        if not marked:
+            selected.append("")
+        elif len(marked) > 1:
+            selected.append("INVALID")
+        else:
+            selected.append(numeric_options[marked[0]])
+
+    if all(value == "" for value in selected):
+        return None
+
+    if "INVALID" in selected:
+        return "INVALID"
+
+    text = "".join(selected)
+
+    # A sheet with only '-' / '.' marked has no numeric value.
+    if not any(ch.isdigit() for ch in text):
+        return "INVALID"
+
+    return text
+
+
+def process_jee_advanced(image, schema):
+    debug = image.copy()
+    result = {}
+    options = schema["options"]
+
+    roll_number, _roll_debug = read_roll_number_advanced(
+        image,
+        schema["roll_number"]
+    )
+
+    # Section A and Section C: both allow more than one marked option.
+    for block in schema["mcq_blocks"]:
+        multi = block.get("multi_correct", False)
+
+        for row, y in enumerate(block["y_positions"]):
+            question_number = block["start_question"] + row
+
+            marked = [
+                i
+                for i, x in enumerate(block["x_positions"])
+                if ink_ratio_advanced(image, x, y, radius=5)
+                >= ADV_FILLED_THRESHOLD
+            ]
+
+            if not marked:
+                answer = None
+            elif multi:
+                # Multi-correct answers are stored as one string
+                # in option order ("AC"), so the answer key and the
+                # student sheet compare exactly.
+                answer = "".join(options[i] for i in marked)
+            elif len(marked) > 1:
+                answer = "INVALID"
+            else:
+                answer = options[marked[0]]
+
+            result[str(question_number)] = answer
+
+            for i in marked:
+                cv2.circle(
+                    debug,
+                    (block["x_positions"][i], y),
+                    10,
+                    (0, 200, 0),
+                    2
+                )
+
+    # Section B numerical answers.
+    for block in schema["numeric_blocks"]:
+        result[str(block["question"])] = read_advanced_numeric_question(
+            image,
+            block,
+            schema["numeric_options"]
+        )
+
+    total = schema.get("total_questions", 54)
+    expected_questions = {str(i) for i in range(1, total + 1)}
+
+    if set(result.keys()) != expected_questions:
+        missing = sorted(
+            expected_questions - set(result.keys()),
+            key=int
+        )
+
+        raise ValueError(
+            "JEE Advanced extraction did not produce "
+            f"all {total} questions. Missing: {missing}"
+        )
+
+    # Keep answers in question order (1, 2, 3 ... 54).
+    result = {str(i): result[str(i)] for i in range(1, total + 1)}
+
+    return result, debug, roll_number
+
+
 # ============================================================
 # NEET
 # ============================================================
@@ -657,6 +1116,7 @@ def save_json(result, exam_name, roll_number=None):
     # --------------------------------------------------------
     exam_file_names = {
         "JEE Main": "jee_mains",
+        "JEE Advanced": "jee_advanced",
         "NEET": "neet",
     }
 
@@ -706,6 +1166,11 @@ def main():
         schema = NEET_SCHEMAS[schema_variant]
         print(f"\nSelected: NEET - Schema {schema_variant}")
 
+    elif choice == "3":
+        schema_variant = select_jee_advanced_schema()
+        schema = JEE_ADVANCED_SCHEMAS[schema_variant]
+        print(f"\nSelected: JEE Advanced - Schema {schema_variant}")
+
     else:
         raise ValueError("Unknown OMR type.")
 
@@ -736,6 +1201,12 @@ def main():
 
     elif choice == "2":
         result, debug, roll_number = process_neet(
+            image,
+            schema
+        )
+
+    elif choice == "3":
+        result, debug, roll_number = process_jee_advanced(
             image,
             schema
         )
